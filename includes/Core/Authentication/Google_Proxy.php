@@ -59,6 +59,20 @@ class Google_Proxy {
 	 */
 	const AI_OPERATION_URI = '/v1/ai/operations/%s';
 
+	/**
+	 * Endpoint for getting notifications.
+	 *
+	 * @since 1.126.0
+	 */
+	const NOTIFICATIONS_URI = '/notifications/';
+
+	/**
+	 * Endpoint for marking notifications.
+	 *
+	 * @since 1.126.0
+	 */
+	const NOTIFICATIONS_MARK_URI = '/notifications/mark/';
+
 	const ACTION_EXCHANGE_SITE_CODE = 'googlesitekit_proxy_exchange_site_code';
 	const ACTION_SETUP              = 'googlesitekit_proxy_setup';
 	const ACTION_SETUP_START        = 'googlesitekit_proxy_setup_start';
@@ -865,6 +879,52 @@ class Google_Proxy {
 			array(
 				'access_token' => $access_token,
 				'method'       => 'GET',
+			)
+		);
+	}
+
+	/**
+	 * Gets notifications from the proxy.
+	 *
+	 * @since 1.126.0
+	 *
+	 * @param Credentials $credentials  Credentials instance.
+	 * @param string      $access_token Access token.
+	 * @return array|WP_Error Decoded JSON body of the proxy's response, or WP_Error on failure.
+	 */
+	public function get_notifications( Credentials $credentials, $access_token ) {
+		return $this->request(
+			self::NOTIFICATIONS_URI,
+			$credentials,
+			array(
+				'access_token' => $access_token,
+				'method'       => 'GET',
+			)
+		);
+	}
+
+	/**
+	 * Marks a notification on the proxy.
+	 *
+	 * @since 1.126.0
+	 *
+	 * @param Credentials $credentials  Credentials instance.
+	 * @param string      $access_token Access token.
+	 * @param string      $notification_id Notification ID.
+	 * @param string      $notification_state Notification state.
+	 * @return array|WP_Error Decoded JSON body of the proxy's response, or WP_Error on failure.
+	 */
+	public function mark_notification( Credentials $credentials, $access_token, $notification_id, $notification_state ) {
+		return $this->request(
+			self::NOTIFICATIONS_MARK_URI,
+			$credentials,
+			array(
+				'access_token' => $access_token,
+				'body'         => array(
+					'notification_id'    => $notification_id,
+					'notification_state' => $notification_state,
+				),
+				'return'       => 'response',
 			)
 		);
 	}

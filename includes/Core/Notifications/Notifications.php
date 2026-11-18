@@ -124,20 +124,16 @@ class Notifications {
 					array(
 						'methods'             => WP_REST_Server::READABLE,
 						'callback'            => function () {
-							$endpoint = add_query_arg(
-								array(
-									'site_id' => $this->credentials->get()['oauth2_client_id'],
-									'hl'      => get_user_locale(),
-								),
-								$this->google_proxy->url( '/notifications/' )
-							);
-
 							// Return an empty array of notifications if the user isn't using the proxy.
 							if ( ! $this->credentials->using_proxy() ) {
 								return new WP_REST_Response( array() );
 							}
 
-							$response = wp_remote_get( $endpoint ); // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.wp_remote_get_wp_remote_get
+							$credentials  = $this->credentials->get();
+							$oauth_client = $this->authentication->get_oauth_client();
+							$access_token = (string) $oauth_client->get_access_token();
+
+							$response = $this->google_proxy->get_notifications( $credentials, $access_token );
 
 							if ( is_wp_error( $response ) ) {
 								return $response;
@@ -177,17 +173,24 @@ class Notifications {
 								return $this->missing_required_param( 'data.notificationState' );
 							}
 
-							$credentials = $this->credentials->get();
-							$response    = wp_remote_post(
-								$this->google_proxy->url( '/notifications/mark/' ),
-								array(
-									'body' => array(
-										'site_id'         => $credentials['oauth2_client_id'],
-										'site_secret'     => $credentials['oauth2_client_secret'],
-										'notification_id' => $data['notificationID'],
-										'notification_state' => $data['notificationState'],
-									),
-								)
+							// Return error if the site isn't using the proxy.
+							if ( ! $this->credentials->using_proxy() ) {
+								return new WP_REST_Response(
+									array(
+										'success' => false,
+									)
+								);
+							}
+
+							$credentials  = $this->credentials->get();
+							$oauth_client = $this->authentication->get_oauth_client();
+							$access_token = (string) $oauth_client->get_access_token();
+
+							$response = $this->google_proxy->mark_notification(
+								$credentials,
+								$access_token,
+								$data['notificationID'],
+								$data['notificationState']
 							);
 
 							if ( is_wp_error( $response ) ) {
