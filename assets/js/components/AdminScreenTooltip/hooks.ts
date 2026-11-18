@@ -69,7 +69,7 @@ export function useShowTooltip( tooltipSettings: TooltipSettings ) {
  *
  * @return {Object} Tooltip settings.
  */
-export function useTooltipSettings(): TooltipSettings {
+export function useTooltipSettings(): Partial< TooltipSettings > {
 	return useSelect(
 		( select: Select ) =>
 			select( CORE_UI ).getValue( 'admin-screen-tooltip' ) || {
